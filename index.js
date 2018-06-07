@@ -1,11 +1,15 @@
 const express = require('express');
+const cryptico = require('cryptico-js');
 const app = express();
+const DIFFICULTY = 2;
+const RSABITS = 1024; 
 var SHA256 = require("crypto-js/sha256");
+var CryptoJS = require("crypto-js");
 
 class Blockchain{
     constructor() {
         this.chain = [this.createGenesisBlock()];
-        this.difficulty = 4;
+        this.difficulty = DIFFICULTY;
     }
 
     createGenesisBlock() {
@@ -39,6 +43,16 @@ class Blockchain{
     }
 }
 
+//Create GUID 
+
+function guid() {
+    function s4() {
+      return Math.floor((1 + Math.random()) * 0x10000)
+        .toString(16)
+        .substring(1);
+    }
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+  }
 
 /*This class defines a basic block in which user information can be stored. Basically a block will contain multiple
 transactions having multiple documents but here for simplicity we are using one block per document.*/
@@ -94,14 +108,44 @@ class Data{
     }
 }
 
+function RandomSecretKeyGenerator()
+{
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
+
+function GenerateAddressAndKey(PassPhrase)
+{
+    var KeyPair = {};
+    KeyPair.RSAPrivateKey = cryptico.generateRSAKey(PassPhrase, RSABITS);
+    KeyPair.RSAAddress = cryptico.publicKeyString(KeyPair.RSAPrivateKey);
+    return KeyPair;
+}
+
+//User Functions Issue and Share
+function ISSUE(FromAddress,ToAddress,Document)
+{
+    var SecretKey = RandomSecretKeyGenerator();
+    var EncryptedDocument = CryptoJS.AES.encrypt(Document, SecretKey).toString();
+    var EncryptedSecretKey = cryptico.encrypt(SecretKey, ToAddress);
+    var data = new Data(EncryptedDocument,EncryptedSecretKey);
+    var trans = new Transaction(guid(),Date.now(),data,null,FromAddress,ToAddress);
+    console.log(trans);
+    var newblock = new Block(blockchain.getLatestBlock().blockheight+1,Date.now(),blockchain.getLatestBlock().currenthash,trans);
+    blockchain.addBlock(newblock);
+}
+
+function SHARE(FromAddress,ToAddress,TransactionID)
+{
+
+}
+
 var blockchain = new Blockchain();
 blockchain.createGenesisBlock();
-var data = new Data('This is encrypted Signed Document 1','EncryptedSecretKeyForDoc1');
-var trans = new Transaction('T1','06/05/2018',data,null,'Akash','Eish');
-var newblock = new Block(1,'06/06/2018',blockchain.getLatestBlock().currenthash,trans);
-blockchain.addBlock(newblock);
-console.log(blockchain);
-app.get('/', (req, res) => res.send(blockchain));
+var keypair1 = GenerateAddressAndKey("HelloWorld");
+var keypair2 = GenerateAddressAndKey("HelloWorld");
+ISSUE(keypair1.RSAAddress,keypair2.RSAAddress,"Test Document");
+app.get('/GetBlockChain', (req, res) => res.send(blockchain));
+app.get('/GetLatestBlock', (req, res) => res.send(blockchain.getLatestBlock()));
 app.listen(3000, () => console.log('Example app listening on port 3000!'));
 
 
