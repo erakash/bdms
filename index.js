@@ -101,7 +101,7 @@ var trans = new Transaction('T1','06/05/2018',data,null,'Akash','Eish');
 var newblock = new Block(1,'06/06/2018',blockchain.getLatestBlock().currenthash,trans);
 blockchain.addBlock(newblock);
 console.log(blockchain);
-app.get('/', (req, res) => res.send('Hello World!'));
+app.get('/', (req, res) => res.send(blockchain));
 app.listen(3000, () => console.log('Example app listening on port 3000!'));
 
 
