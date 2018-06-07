@@ -1,10 +1,14 @@
 const express = require('express');
 const cryptico = require('cryptico-js');
 const app = express();
-const DIFFICULTY = 2;
-const RSABITS = 1024; 
 var SHA256 = require("crypto-js/sha256");
 var CryptoJS = require("crypto-js");
+
+//----------------Global Variables-------------------
+const DIFFICULTY = 2;
+const RSABITS = 1024; 
+//---------------------------------------------------
+
 
 class Blockchain{
     constructor() {
@@ -43,8 +47,7 @@ class Blockchain{
     }
 }
 
-//Create GUID 
-
+//---------Function to create GUID for transactions as Transactions ID-------------
 function guid() {
     function s4() {
       return Math.floor((1 + Math.random()) * 0x10000)
@@ -53,6 +56,7 @@ function guid() {
     }
     return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
   }
+
 
 /*This class defines a basic block in which user information can be stored. Basically a block will contain multiple
 transactions having multiple documents but here for simplicity we are using one block per document.*/
@@ -80,6 +84,7 @@ class Block {
     }
 }
 
+//-------------This class defines a transactions and data which will go inside it-------------------//
 class Transaction{
     constructor(transactionid,timestamp,data,referencedtransactionid,fromaddress,toaddress)
     {
@@ -99,7 +104,8 @@ class Transaction{
         this.toaddress = toaddress;
     }
 }
-//Asset
+
+//--------------------This will contains all of the data---------------------------//
 class Data{
     constructor(EncryptedSignedDocument,EncryptedSecretKey)
     {
@@ -108,11 +114,15 @@ class Data{
     }
 }
 
+
+//------------------Generate Random Secret key for document encryption-------------//
 function RandomSecretKeyGenerator()
 {
     return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 }
 
+
+//-------------------Generate address of the user which is also public key--------//
 function GenerateAddressAndKey(PassPhrase)
 {
     var KeyPair = {};
@@ -121,7 +131,7 @@ function GenerateAddressAndKey(PassPhrase)
     return KeyPair;
 }
 
-//User Functions Issue and Share
+//------------------------User Functions Issue and Share-----------------------//
 function ISSUE(FromAddress,ToAddress,Document)
 {
     var SecretKey = RandomSecretKeyGenerator();
@@ -139,13 +149,16 @@ function SHARE(FromAddress,ToAddress,TransactionID)
 
 }
 
-var blockchain = new Blockchain();
-blockchain.createGenesisBlock();
-var keypair1 = GenerateAddressAndKey("HelloWorld");
-var keypair2 = GenerateAddressAndKey("HelloWorld");
-ISSUE(keypair1.RSAAddress,keypair2.RSAAddress,"Test Document");
-app.get('/GetBlockChain', (req, res) => res.send(blockchain));
-app.get('/GetLatestBlock', (req, res) => res.send(blockchain.getLatestBlock()));
+
+//-------------------------Code Run Point----------------------------//
+var blockchain = new Blockchain();  //Initiate a new blockchain
+blockchain.createGenesisBlock();    //Create Genesis Block in the blockchain
+var keypair1 = GenerateAddressAndKey("Key1"); //Create key pair 1 for user 1
+var keypair2 = GenerateAddressAndKey("Key2"); //Create key pair 2 for user 2
+ISSUE(keypair1.RSAAddress,keypair2.RSAAddress,"Test Document"); //Sample transaction - Issue a test document to user 2
+
+app.get('/GetBlockChain', (req, res) => res.send(blockchain)); //Api to get complete blockchain in JSON URL - http://localhost:3000/getblockchain
+app.get('/GetLatestBlock', (req, res) => res.send(blockchain.getLatestBlock()));//Api to latest block in blockchain in JSON URL - http://localhost:3000/GetLatestBlock
 app.listen(3000, () => console.log('Example app listening on port 3000!'));
 
 
