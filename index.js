@@ -4,6 +4,7 @@ const app = express();
 var SHA256 = require("crypto-js/sha256");
 var CryptoJS = require("crypto-js");
 
+
 //----------------Global Variables-------------------
 const DIFFICULTY = 2;
 const RSABITS = 1024; 
@@ -17,7 +18,7 @@ class Blockchain{
     }
 
     createGenesisBlock() {
-        return new Block(0, "01/01/2018", "Genesis block", "Transaction{transactionid: 'e5347ab8-c510-5e20-449a-be550e734ddd'}");
+        return new Block(0, "01/01/2018", "Genesis block", "Transaction{transactionid: 'This is genesis block Trans Id'}");
     }
 
     getLatestBlock() {
@@ -156,15 +157,14 @@ function ISSUE(FromAddress,ToAddress,Document)
 
 function SHARE(FromAddress,ToAddress,TransactionID,UnlockingKey)
 {
+    var KeyPair = GenerateAddressAndKey(UnlockingKey);
     var EncryptedSecretKey = GetEncryptedSecretKeyOfTransaction(TransactionID).cipher;   
-    var SecretKey = cryptico.decrypt(EncryptedSecretKey, UnlockingKey);    
+    var SecretKey = cryptico.decrypt(EncryptedSecretKey, KeyPair.RSAPrivateKey); 
     var EncryptedSecretKeyNew = cryptico.encrypt(SecretKey, ToAddress);
     var trans = new Transaction(guid(),Date.now(),null,TransactionID,FromAddress,ToAddress);
     var newblock = new Block(blockchain.getLatestBlock().blockheight+1,Date.now(),blockchain.getLatestBlock().currenthash,trans);
     blockchain.addBlock(newblock);
-    console.log(newblock);
 }
-
 
 //-------------------------Code Run Point----------------------------//
 var blockchain = new Blockchain();  //Initiate a new blockchain
@@ -175,11 +175,14 @@ ISSUE(keypair1.RSAAddress,keypair2.RSAAddress,"Test Document"); //Sample transac
 ISSUE(keypair1.RSAAddress,keypair2.RSAAddress,"Test Document 2"); //Sample transaction - Issue a test document to user 2
 ISSUE(keypair1.RSAAddress,keypair2.RSAAddress,"Test Document 2"); //Sample transaction - Issue a test document to user 2
 var chain = blockchain.chain;
-SHARE(keypair1.RSAAddress,keypair2.RSAAddress,'762367fa-78fc-bc70-c63d-b4a21af94348',keypair1.RSAPrivateKey);
-app.get('/GetBlockChain', (req, res) => res.send(blockchain)); //Api to get complete blockchain in JSON URL - http://localhost:3000/getblockchain
+
+SHARE(keypair1.RSAAddress,keypair2.RSAAddress,'762367fa-78fc-bc70-c63d-b4a21af94348',"Key1");
+SHARE(keypair1.RSAAddress,keypair2.RSAAddress,'762367fa-78fc-bc70-c63d-b4a21af94348',"Key2");
+app.get('/GetKeyPair', (req, res) => res.send(GenerateAddressAndKey(req.query.passphrase).RSAAddress));//Api to get public key using passphrase URL - http://localhost:3000/GetKeyPair?passphrase=
+app.get('/GetBlockChain', (req, res) => res.send(chain)); //Api to get complete blockchain in JSON URL - http://localhost:3000/getblockchain
 app.get('/GetLatestBlock', (req, res) => res.send(blockchain.getLatestBlock()));//Api to latest block in blockchain in JSON URL - http://localhost:3000/GetLatestBlock
-app.get('/GetEncryptedSecretKeyOfTransaction', (req, res) => res.send(GetEncryptedSecretKeyOfTransaction(req.query.transid)));
 app.get('/SHARE', (req, res) => res.send(SHARE(req.query.fromadd,req.query.toadd,req.query.transid,req.query.unlockkey)));
+app.get('/ISSUE', (req, res) => res.send(ISSUE(req.query.fromadd,req.query.toadd,req.query.document)));
 app.listen(3000, () => console.log('Example app listening on port 3000!'));
 
 
