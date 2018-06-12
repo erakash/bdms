@@ -17,7 +17,7 @@ class Blockchain{
     }
 
     createGenesisBlock() {
-        return new Block(0, "01/01/2018", "Genesis block", "0");
+        return new Block(0, "01/01/2018", "Genesis block", "Transaction{transactionid: 'e5347ab8-c510-5e20-449a-be550e734ddd'}");
     }
 
     getLatestBlock() {
@@ -49,15 +49,26 @@ class Blockchain{
 
 //---------Function to create GUID for transactions as Transactions ID-------------
 function guid() {
-    function s4() {
-      return Math.floor((1 + Math.random()) * 0x10000)
-        .toString(16)
-        .substring(1);
-    }
-    return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+      s4() + '-' + s4() + s4() + s4();
+  }
+  
+  function s4() {
+    return Math.floor((1 + Math.random()) * 0x10000)
+      .toString(16)
+      .substring(1);
   }
 
-
+  //Function to get encrypted secret key of transaction given a transaction id------
+  function GetEncryptedSecretKeyOfTransaction(transactionid){
+    for (var i = 0; i < chain.length; i++){
+        var transid = chain[i].transaction.transactionid;
+        if(transid == transactionid)
+        {  
+            return chain[i].transaction.data.EncryptedSecretKey;
+        }          
+    }
+}
 /*This class defines a basic block in which user information can be stored. Basically a block will contain multiple
 transactions having multiple documents but here for simplicity we are using one block per document.*/
 
@@ -80,15 +91,15 @@ class Block {
             this.nonce++;
             this.currenthash = this.calculateHash();
         }
-        console.log("BLOCK MINED: " + this.currenthash);
+        //console.log("BLOCK MINED: " + this.currenthash);
     }
 }
 
 //-------------This class defines a transactions and data which will go inside it-------------------//
 class Transaction{
-    constructor(transactionid,timestamp,data,referencedtransactionid,fromaddress,toaddress)
+    constructor(newtransid,timestamp,data,referencedtransactionid,fromaddress,toaddress)
     {
-        this.transactionid = transactionid;
+        this.transactionid = newtransid;
         this.timestamp = timestamp;
         this.data = data;
         if(data==null)
@@ -139,14 +150,19 @@ function ISSUE(FromAddress,ToAddress,Document)
     var EncryptedSecretKey = cryptico.encrypt(SecretKey, ToAddress);
     var data = new Data(EncryptedDocument,EncryptedSecretKey);
     var trans = new Transaction(guid(),Date.now(),data,null,FromAddress,ToAddress);
-    console.log(trans);
     var newblock = new Block(blockchain.getLatestBlock().blockheight+1,Date.now(),blockchain.getLatestBlock().currenthash,trans);
     blockchain.addBlock(newblock);
 }
 
-function SHARE(FromAddress,ToAddress,TransactionID)
+function SHARE(FromAddress,ToAddress,TransactionID,UnlockingKey)
 {
-
+    var EncryptedSecretKey = GetEncryptedSecretKeyOfTransaction(TransactionID).cipher;   
+    var SecretKey = cryptico.decrypt(EncryptedSecretKey, UnlockingKey);    
+    var EncryptedSecretKeyNew = cryptico.encrypt(SecretKey, ToAddress);
+    var trans = new Transaction(guid(),Date.now(),null,TransactionID,FromAddress,ToAddress);
+    var newblock = new Block(blockchain.getLatestBlock().blockheight+1,Date.now(),blockchain.getLatestBlock().currenthash,trans);
+    blockchain.addBlock(newblock);
+    console.log(newblock);
 }
 
 
@@ -156,10 +172,16 @@ blockchain.createGenesisBlock();    //Create Genesis Block in the blockchain
 var keypair1 = GenerateAddressAndKey("Key1"); //Create key pair 1 for user 1
 var keypair2 = GenerateAddressAndKey("Key2"); //Create key pair 2 for user 2
 ISSUE(keypair1.RSAAddress,keypair2.RSAAddress,"Test Document"); //Sample transaction - Issue a test document to user 2
-
+ISSUE(keypair1.RSAAddress,keypair2.RSAAddress,"Test Document 2"); //Sample transaction - Issue a test document to user 2
+ISSUE(keypair1.RSAAddress,keypair2.RSAAddress,"Test Document 2"); //Sample transaction - Issue a test document to user 2
+var chain = blockchain.chain;
+SHARE(keypair1.RSAAddress,keypair2.RSAAddress,'762367fa-78fc-bc70-c63d-b4a21af94348',keypair1.RSAPrivateKey);
 app.get('/GetBlockChain', (req, res) => res.send(blockchain)); //Api to get complete blockchain in JSON URL - http://localhost:3000/getblockchain
 app.get('/GetLatestBlock', (req, res) => res.send(blockchain.getLatestBlock()));//Api to latest block in blockchain in JSON URL - http://localhost:3000/GetLatestBlock
+app.get('/GetEncryptedSecretKeyOfTransaction', (req, res) => res.send(GetEncryptedSecretKeyOfTransaction(req.query.transid)));
+app.get('/SHARE', (req, res) => res.send(SHARE(req.query.fromadd,req.query.toadd,req.query.transid,req.query.unlockkey)));
 app.listen(3000, () => console.log('Example app listening on port 3000!'));
+
 
 
 
