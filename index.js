@@ -3,6 +3,7 @@ const cryptico = require('cryptico-js');
 const app = express();
 var SHA256 = require("crypto-js/sha256");
 var CryptoJS = require("crypto-js");
+var path = require('path');
 
 
 //----------------Global Variables-------------------
@@ -187,4 +188,6 @@ app.listen(3000, () => console.log('Example app listening on port 3000!'));
 
 
 
-
+app.get('/BlockChain', function(req, res) {
+    res.sendFile(path.join(__dirname + '/BlockChainView.html'));
+});
