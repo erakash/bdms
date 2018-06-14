@@ -19,111 +19,9 @@
 </head>
 
 <body>
-    <button id="insert" onclick="GetBlockChain()">Insert Block</button>
-    <div id="blockchain" class="your-class">
-        <div class="blockdiv">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <td>Attribute</td>
-                        <td>Value</td>
-                    </tr>
-                    <thead>
-                        <tr>
-                            <td>Block Height</td>
-                            <td>1</td>
-                        </tr>
-                        <tr>
-                            <td>Time Stamp</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td>Previous Hash</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td>Transaction</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td>Is Shared</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td>Referenced Trans ID</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td>From Address</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td>To Address</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td>Current Hash</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td>Nonce</td>
-                            <td></td>
-                        </tr>
-            </table>
-        </div>
-        <div class="blockdiv">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <td>Attribute</td>
-                        <td>Value</td>
-                    </tr>
-                    <thead>
-                        <tr>
-                            <td>Block Height</td>
-                            <td>2</td>
-                        </tr>
-                        <tr>
-                            <td>Time Stamp</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td>Previous Hash</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td>Transaction</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td>Is Shared</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td>Referenced Transaction ID</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td>From Address</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td>To Address</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td>Current Hash</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td>Nonce</td>
-                            <td></td>
-                        </tr>
-            </table>
-        </div>
+    <div id="blockchain" class="your-class">        
     </div>
 </body>
-
 </html>
 
 
@@ -136,22 +34,14 @@
             autoplay: true,
             autoplaySpeed: 2000,
         });
-
-    });
-    var divstring = '<div class="blockdiv"><table class="table table-striped"><thead><tr><td>Attribute</td><td>Value</td></tr><thead><tr><td>Block Height</td><td>5</td></tr><tr><td>Time Stamp</td><td></td></tr><tr><td>Previous Hash</td><td></td></tr><tr><td>Transaction</td><td></td></tr><tr><td>Is Shared</td><td></td></tr><tr><td>Referenced Transaction ID</td><td></td></tr><tr><td>From Address</td><td></td></tr><tr><td>To Address</td><td></td></tr><tr><td>Current Hash</td><td></td></tr><tr><td>Nonce</td><td></td></tr></table></div>'
-    $('#insert').on('click', function () {
-        $('#blockchain').slick('slickAdd', divstring);
+        GetBlockChain();
     });
 
 function GetBlockChain(){
-    $.getJSON("http://localhost:3000/getblockchain", function(result){
-        console.log(result);
-        for (var i = 0; i < chain.length; i++){
-        var transid = chain[i].transaction.transactionid;
-        if(transid == transactionid)
-        {  
-            return chain[i].transaction.data.EncryptedSecretKey;
-        }          
+    $.getJSON("http://localhost:3000/getblockchain", function(BlockChain){    
+        for (var i = 0; i < BlockChain.length; i++){
+            console.log(BlockChain[i]);
+            $('#blockchain').slick('slickAdd', getBlockTable(BlockChain[i])); 
     }
     });
 }
