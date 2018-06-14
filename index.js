@@ -187,7 +187,10 @@ app.get('/ISSUE', (req, res) => res.send(ISSUE(req.query.fromadd,req.query.toadd
 app.listen(3000, () => console.log('Example app listening on port 3000!'));
 
 
-
 app.get('/BlockChain', function(req, res) {
     res.sendFile(path.join(__dirname + '/BlockChainView.html'));
+});
+
+app.get('/Viktor', function(req, res) {
+    res.sendFile(path.join(__dirname + '/Viktor.html'));
 });

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
     <script type="text/javascript" src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
@@ -19,9 +20,10 @@
 </head>
 
 <body>
-    <div id="blockchain" class="your-class">        
+    <div id="blockchain" class="your-class">
     </div>
 </body>
+
 </html>
 
 
@@ -37,15 +39,21 @@
         GetBlockChain();
     });
 
-function GetBlockChain(){
-    $.getJSON("http://localhost:3000/getblockchain", function(BlockChain){    
-        for (var i = 0; i < BlockChain.length; i++){
-            console.log(BlockChain[i]);
-            $('#blockchain').slick('slickAdd', getBlockTable(BlockChain[i])); 
+    function GetBlockChain() {
+        $.getJSON("http://localhost:3000/getblockchain", function (BlockChain) {
+            for (var i = 0; i < BlockChain.length; i++) {
+                console.log(BlockChain[i]);
+                $('#blockchain').slick('slickAdd', getBlockTable(BlockChain[i]));
+            }
+        });
     }
+    function getBlockTable(data) {
+        return '<div class="blockdiv"><table class="table table-striped"><thead><tr><td>Attribute</td><td>Value</td></tr><thead><tr><td>Block Height</td><td>' + data.blockheight + '</td></tr><tr><td>Time Stamp</td><td>' + data.timestamp + '</td></tr><tr><td>Previous Hash</td><td>' + data.previousHash + '</td></tr><tr><td>Transaction</td><td>' + data.transaction + '</td></tr><tr><td>Is Shared</td><td>' + data.isshared + '</td></tr><tr><td>Referenced Transaction ID</td><td>' + data.referencedtransactionid + '</td></tr><tr><td>From Address</td><td>' + data.fromaddress + '</td></tr><tr><td>To Address</td><td>' + data.toaddress + '</td></tr><tr><td>Current Hash</td><td>' + data.currenthash + '</td></tr><tr><td>Nonce</td><td>' + data.nonce + '</td></tr></table></div>'
+    }
+    $(document).ready(function () {
+        setTimeout(function () {
+            GetBlockChain();
+        }, 5000);
     });
-}
-function getBlockTable(data){
-    return '<div class="blockdiv"><table class="table table-striped"><thead><tr><td>Attribute</td><td>Value</td></tr><thead><tr><td>Block Height</td><td>'+data.blockheight+'</td></tr><tr><td>Time Stamp</td><td>'+data.timestamp+'</td></tr><tr><td>Previous Hash</td><td>'+data.previousHash+'</td></tr><tr><td>Transaction</td><td>'+data.transaction+'</td></tr><tr><td>Is Shared</td><td>'+data.isshared+'</td></tr><tr><td>Referenced Transaction ID</td><td>'+data.referencedtransactionid+'</td></tr><tr><td>From Address</td><td>'+data.fromaddress+'</td></tr><tr><td>To Address</td><td>'+data.toaddress+'</td></tr><tr><td>Current Hash</td><td>'+data.currenthash+'</td></tr><tr><td>Nonce</td><td>'+data.nonce+'</td></tr></table></div>'
-}
+
 </script>
