@@ -71,6 +71,32 @@ function guid() {
         }          
     }
 }
+
+  //Function to get Issued Transactions------
+  function GetIssuedTransactions(FromAddress){
+      var result = [];
+    for (var i = 0; i < chain.length; i++){
+        var TransFromAddress = chain[i].transaction.fromaddress;
+        if(FromAddress == TransFromAddress)
+        {  
+            result.push(chain[i].transaction);
+        }          
+    }
+    return JSON.stringify(result);
+}
+
+  //Function to get Shared Transactions------
+  function GetSharedTransactions(ToAddress){
+    var result = [];
+    for (var i = 0; i < chain.length; i++){
+        var TransToAddress = chain[i].transaction.toaddress;
+        if(ToAddress == TransToAddress)
+        {  
+            result.push(chain[i].transaction);
+        }          
+    }
+    return JSON.stringify(result);
+}
 /*This class defines a basic block in which user information can be stored. Basically a block will contain multiple
 transactions having multiple documents but here for simplicity we are using one block per document.*/
 
@@ -170,21 +196,16 @@ function SHARE(FromAddress,ToAddress,TransactionID,UnlockingKey)
 //-------------------------Code Run Point----------------------------//
 var blockchain = new Blockchain();  //Initiate a new blockchain
 blockchain.createGenesisBlock();    //Create Genesis Block in the blockchain
-var keypair1 = GenerateAddressAndKey("Key1"); //Create key pair 1 for user 1
-var keypair2 = GenerateAddressAndKey("Key2"); //Create key pair 2 for user 2
-ISSUE(keypair1.RSAAddress,keypair2.RSAAddress,"Test Document"); //Sample transaction - Issue a test document to user 2
-ISSUE(keypair1.RSAAddress,keypair2.RSAAddress,"Test Document 2"); //Sample transaction - Issue a test document to user 2
-ISSUE(keypair1.RSAAddress,keypair2.RSAAddress,"Test Document 2"); //Sample transaction - Issue a test document to user 2
 var chain = blockchain.chain;
 
-SHARE(keypair1.RSAAddress,keypair2.RSAAddress,'762367fa-78fc-bc70-c63d-b4a21af94348',"Key1");
-SHARE(keypair1.RSAAddress,keypair2.RSAAddress,'762367fa-78fc-bc70-c63d-b4a21af94348',"Key2");
 app.get('/GetKeyPair', (req, res) => res.send(GenerateAddressAndKey(req.query.passphrase).RSAAddress));//Api to get public key using passphrase URL - http://localhost:3000/GetKeyPair?passphrase=
 app.get('/GetBlockChain', (req, res) => res.send(chain)); //Api to get complete blockchain in JSON URL - http://localhost:3000/getblockchain
 app.get('/GetLatestBlock', (req, res) => res.send(blockchain.getLatestBlock()));//Api to latest block in blockchain in JSON URL - http://localhost:3000/GetLatestBlock
-app.get('/SHARE', (req, res) => res.send(SHARE(req.query.fromadd,req.query.toadd,req.query.transid,req.query.unlockkey)));
-app.get('/ISSUE', (req, res) => res.send(ISSUE(req.query.fromadd,req.query.toadd,req.query.document)));
+app.get('/SHARE', (req, res) => res.send(SHARE(new Buffer(req.query.fromadd, 'base64').toString('utf8'),new Buffer(req.query.toadd, 'base64').toString('utf8'),new Buffer(req.query.transid, 'base64').toString('utf8'),new Buffer(req.query.unlockkey, 'base64').toString('utf8'))));
+app.get('/ISSUE', (req, res) => res.send(ISSUE(new Buffer(req.query.fromadd, 'base64').toString('utf8'),new Buffer(req.query.toadd, 'base64').toString('utf8'),new Buffer(req.query.document, 'base64').toString('utf8'))));
 app.listen(3000, () => console.log('Example app listening on port 3000!'));
+app.get('/GetIssuedTransactions', (req, res) => res.send(GetIssuedTransactions(new Buffer(req.query.fromadd, 'base64'))));
+app.get('/GetSharedTransactions', (req, res) => res.send(GetSharedTransactions(new Buffer(req.query.toadd, 'base64'))));
 
 
 app.get('/BlockChain', function(req, res) {

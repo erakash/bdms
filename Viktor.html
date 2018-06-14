@@ -72,11 +72,12 @@
                         </div>
                     </div>
                 </nav>
-                <textarea class="documenttextarea" rows="3" placeholder="Enter your document data" required></textarea>
+                <textarea class="documenttextarea" rows="3" id="document" placeholder="Enter your document data" required></textarea>
+                </br>
                 <div class="input-group issuetodiv">
                     <input type="text" class="form-control" id="issuetoaddress" placeholder="To Address">
                     <span class="input-group-btn">
-                        <button type="button" class="btn btn-default btn-default" onclick="GetKeyPair()">Issue Document</button>
+                        <button type="button" class="btn btn-default btn-default" onclick="IssueDocument()">Issue Document</button>
                     </span>
                 </div>
             </div>
@@ -88,18 +89,18 @@
                         </div>
                     </div>
                 </nav>
-                <input type="text" class="form-control transactionsharetxtbx" id="issuetoaddress" placeholder="Transaction to share">
+                <input type="text" class="form-control transactionsharetxtbx" id="sharetransaction" placeholder="Transaction to share">
                 </br>
                 <div class="input-group issuetodiv">
-                    <input type="text" class="form-control" id="issuetoaddress" placeholder="To Address">
+                    <input type="text" class="form-control" id="sharetoaddress" placeholder="To Address">
                     <span class="input-group-btn">
-                        <button type="button" class="btn btn-default btn-default" onclick="GetKeyPair()">Share Document</button>
+                        <button type="button" class="btn btn-default btn-default" onclick="ShareDocument()">Share Document</button>
                     </span>
                 </div>
             </div>
         </div>
     </div>
-
+    <button type="button" class="btn btn-default btn-default" onclick="GetIssuedTransactions()">Get Issued Transactions</button>
 </body>
 
 </html>
@@ -107,9 +108,43 @@
 <script>
     function GetKeyPair() {
         var passphrase = $('#passphrasetxtbox').val();
-        console.log(passphrase);
         $.get("http://localhost:3000/GetKeyPair?passphrase=" + passphrase, function (result) {
             $('#myaddress').val(result);
+        });
+    }
+
+    function GetIssuedTransactions() {
+        var FromAdd = $('#myaddress').val();
+        $.get("http://localhost:3000/GetIssuedTransactions?fromadd=" + btoa(FromAdd), function (result) {
+            console.log(result);
+        });
+    }
+
+    function GetSharedTransactions() {
+        var toadd = $('#myaddress').val();
+        $.get("http://localhost:3000/GetSharedTransactions?toadd=" + btoa(ToAdd), function (result) {
+            console.log(result);
+        });
+    }
+
+    function ShareDocument() {
+        var queryparameters = {};
+        queryparameters.fromadd = btoa($('#myaddress').val());
+        queryparameters.toadd = btoa($('#sharetoaddress').val());
+        queryparameters.transid = btoa($('#sharetransaction').val());
+        queryparameters.unlockkey = btoa($('#passphrasetxtbox').val());        
+        $.get("http://localhost:3000/SHARE?" + $.param(queryparameters), function (result) {
+            console.log(result);
+        });
+    }
+
+    function IssueDocument() {
+        var queryparameters = {};
+        queryparameters.fromadd = btoa($('#myaddress').val());
+        queryparameters.toadd = btoa($('#issuetoaddress').val());
+        queryparameters.document = btoa($('#document').val());
+        $.get("http://localhost:3000/ISSUE?" + $.param(queryparameters), function (result) {
+            console.log(result);
         });
     }
 </script>
