@@ -12,6 +12,7 @@
         crossorigin="anonymous"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.css">
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mouse0270-bootstrap-notify/3.1.7/bootstrap-notify.js"></script>
     <style>
         .myaddress {
             width: 800px !important;
@@ -38,6 +39,13 @@
         .transactionsharetxtbx {
             width: 90%;
         }
+
+        .profileimage {
+            height: 150px;
+            width: 150px;
+            float: right;
+            margin-right: 100px;
+        }
     </style>
 </head>
 
@@ -49,7 +57,7 @@
             </div>
             <div class="input-group">
                 <form class="navbar-form navbar-right">
-                    <input type="text" class="form-control myaddress" placeholder="My Address"  id="myaddress" name="myaddress">
+                    <input type="text" class="form-control myaddress" placeholder="My Address" id="myaddress" name="myaddress">
                 </form>
                 <span class="input-group-btn">
                     <button type="button" class="btn btn-default btn-default" onclick="CopyMyAddress()">Copy Address</button>
@@ -67,7 +75,9 @@
             </div>
         </div>
         <div class="col-sm-4"></div>
-        <div class="col-sm-4"></div>
+        <div class="col-sm-4">
+            <img class="profileimage" src="http://i0.kym-cdn.com/entries/icons/facebook/000/000/702/pirate_jack_sparrow.jpg">
+        </div>
     </div>
     <div class="OperationsSectionDiv">
         <div class="row">
@@ -151,9 +161,15 @@
 
     function GetKeyPair() {
         var passphrase = $('#passphrasetxtbox').val();
-        $.get("http://localhost:3000/GetKeyPair?passphrase=" + passphrase, function (result) {
-            $('#myaddress').val(result);
-        });
+        if (passphrase) {
+            $.get("http://localhost:3000/GetKeyPair?passphrase=" + passphrase, function (result) {
+                $('#myaddress').val(result);
+                $.notify({ message: 'Address Generated' }, { type: 'info' });
+            });
+        }
+        else
+            $.notify({ message: 'Please Enter Passphrase' }, { type: 'danger' });
+
     }
 
     function GetIssuedTransactions() {
@@ -172,23 +188,50 @@
 
     function ShareDocument() {
         var queryparameters = {};
-        queryparameters.fromadd = btoa($('#myaddress').val());
-        queryparameters.toadd = btoa($('#sharetoaddress').val());
-        queryparameters.transid = btoa($('#sharetransaction').val());
-        queryparameters.unlockkey = btoa($('#passphrasetxtbox').val());
-        $.get("http://localhost:3000/SHARE?" + $.param(queryparameters), function (result) {
-            console.log(result);
-        });
+        if (!$('#myaddress').val()) {
+            $.notify({ message: 'Please enter From Address' }, { type: 'danger' });
+        }
+        else if (!$('#sharetoaddress').val()) {
+            $.notify({ message: 'Please enter To Address' }, { type: 'danger' });
+        }
+        else if (!$('#sharetransaction').val()) {
+            $.notify({ message: 'Please enter Transaction ID' }, { type: 'danger' });
+        }
+
+        else if (!$('#passphrasetxtbox').val()) {
+            $.notify({ message: 'Please enter Passphrase' }, { type: 'danger' });
+        }
+        else {
+            queryparameters.fromadd = btoa($('#myaddress').val());
+            queryparameters.toadd = btoa($('#sharetoaddress').val());
+            queryparameters.transid = btoa($('#sharetransaction').val());
+            queryparameters.unlockkey = btoa($('#passphrasetxtbox').val());
+            $.get("http://localhost:3000/SHARE?" + $.param(queryparameters), function (result) {
+                console.log(result);
+            });
+        }
     }
 
     function IssueDocument() {
         var queryparameters = {};
-        queryparameters.fromadd = btoa($('#myaddress').val());
-        queryparameters.toadd = btoa($('#issuetoaddress').val());
-        queryparameters.document = btoa($('#document').val());
-        $.get("http://localhost:3000/ISSUE?" + $.param(queryparameters), function (result) {
-            console.log(result);
-        });
+        if (!$('#myaddress').val()) {
+            $.notify({ message: 'Please enter From Address' }, { type: 'danger' });
+        }
+        else if (!$('#issuetoaddress').val()) {
+            $.notify({ message: 'Please enter To Address' }, { type: 'danger' });
+        }
+        else if (!$('#document').val()) {
+            $.notify({ message: 'Please enter Document Text' }, { type: 'danger' });
+        }
+
+        else {
+            queryparameters.fromadd = btoa($('#myaddress').val());
+            queryparameters.toadd = btoa($('#issuetoaddress').val());
+            queryparameters.document = btoa($('#document').val());
+            $.get("http://localhost:3000/ISSUE?" + $.param(queryparameters), function (result) {
+                console.log(result);
+            });
+        }
     }
 
     function IssuedTransactionGridSetup() {
@@ -285,6 +328,6 @@
         var copyText = document.getElementById("myaddress");
         copyText.select();
         document.execCommand("copy");
-        alert("Copied the text: " + copyText.value);
+        $.notify({ message: 'Address Copied' }, { type: 'info' });
     }
 </script>
