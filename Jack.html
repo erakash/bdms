@@ -38,12 +38,6 @@
         .transactionsharetxtbx {
             width: 90%;
         }
-        .profileimage{
-            height: 150px;
-            width: 150px;
-            float: right;
-            margin-right: 100px;
-        }
     </style>
 </head>
 
@@ -51,7 +45,7 @@
     <nav class="navbar navbar-inverse">
         <div class="container-fluid">
             <div class="navbar-header">
-                <a class="navbar-brand" href="#">Viktor</a>
+                <a class="navbar-brand" href="#">Jack</a>
             </div>
             <div class="input-group">
                 <form class="navbar-form navbar-right">
@@ -73,7 +67,7 @@
             </div>
         </div>
         <div class="col-sm-4"></div>
-        <div class="col-sm-4"><img class="profileimage" src="https://i.pinimg.com/236x/62/e6/74/62e67418237a2854aabc1eb7563b54b7--tom-hanks-movie-stars.jpg"></div>
+        <div class="col-sm-4"></div>
     </div>
     <div class="OperationsSectionDiv">
         <div class="row">
@@ -291,5 +285,6 @@
         var copyText = document.getElementById("myaddress");
         copyText.select();
         document.execCommand("copy");
+        alert("Copied the text: " + copyText.value);
     }
 </script>

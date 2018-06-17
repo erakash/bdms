@@ -215,3 +215,7 @@ app.get('/BlockChain', function(req, res) {
 app.get('/Viktor', function(req, res) {
     res.sendFile(path.join(__dirname + '/Viktor.html'));
 });
+
+app.get('/Jack', function(req, res) {
+    res.sendFile(path.join(__dirname + '/Jack.html'));
+});
