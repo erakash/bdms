@@ -19,7 +19,7 @@ class Blockchain{
     }
 
     createGenesisBlock() {
-        return new Block(0, "01/01/2018", "Genesis block", "Transaction{transactionid: 'This is genesis block Trans Id'}");
+        return new Block(0, "01/01/2018", "Genesis block", "{transactionid: 'This is genesis block Trans Id'}");
     }
 
     getLatestBlock() {
@@ -193,6 +193,18 @@ function SHARE(FromAddress,ToAddress,TransactionID,UnlockingKey)
     blockchain.addBlock(newblock);
 }
 
+function GetTransactionbyBlockHeight(BlockHeight){
+    //console.log(BlockHeight);
+    for (var i = 0; i < chain.length; i++){
+        var blockheight = chain[i].blockheight;
+        if(BlockHeight == blockheight)
+        {  
+            return JSON.stringify(chain[i].transaction);
+        }
+    }
+    return null;s
+}
+
 //-------------------------Code Run Point----------------------------//
 var blockchain = new Blockchain();  //Initiate a new blockchain
 blockchain.createGenesisBlock();    //Create Genesis Block in the blockchain
@@ -206,6 +218,7 @@ app.get('/ISSUE', (req, res) => res.send(ISSUE(new Buffer(req.query.fromadd, 'ba
 app.listen(3000, () => console.log('Example app listening on port 3000!'));
 app.get('/GetIssuedTransactions', (req, res) => res.send(GetIssuedTransactions(new Buffer(req.query.fromadd, 'base64'))));
 app.get('/GetSharedTransactions', (req, res) => res.send(GetSharedTransactions(new Buffer(req.query.toadd, 'base64'))));
+app.get('/GetTransactionbyBlockHeight', (req, res) => res.send(GetTransactionbyBlockHeight(req.query.blockheight)));
 
 
 app.get('/BlockChain', function(req, res) {
@@ -218,4 +231,8 @@ app.get('/Viktor', function(req, res) {
 
 app.get('/Jack', function(req, res) {
     res.sendFile(path.join(__dirname + '/Jack.html'));
+});
+
+app.get('/BlockChainView', function(req, res) {
+    res.sendFile(path.join(__dirname + '/BlockChainView.html'));
 });

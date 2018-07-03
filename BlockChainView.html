@@ -16,44 +16,161 @@
         .blockdiv {
             margin: 15px;
         }
+
+        .roundborder {
+            border:1px solid blueviolet;
+            border-radius: 5px;
+        }
+
+        #transactiondiv {
+            margin: 15px;
+            width: 100%;
+        }
+
+        .transactiontable {
+            margin: 15px;
+            width: 97%;
+            table-layout: fixed;
+            overflow: hidden;
+        }
+
+        td {
+            max-width: 400px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        body,
+        html {
+            overflow: hidden
+        }
     </style>
 </head>
 
 <body>
-    <div id="blockchain" class="your-class">
+    <div class="row blockdiv">
+        <nav class="navbar navbar-inverse">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="#">Accenture - Global Technology Innovation Contest - Blockchain View</a>
+                </div>
+            </div>
+        </nav>
+    </div>
+    <div class="row blockdiv">
+        <div id="blockchain" class="blockchainview">
+        </div>
+    </div>
+    <div class="row blockdiv">
+        <nav class="navbar navbar-light" style="background-color: #e3f2fd;">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="#">Transaction Detail</a>
+                </div>
+            </div>
+        </nav>
+    </div>
+    <div class="row">
+        <div id="transactiondiv" class="transactionview roundborder">
+            <table class="table table-striped transactiontable">
+                <tr>
+                    <td width="10%">Transaction ID</td>
+                    <td id="transactionid"></td>
+                    <td width="10%">To Address</td>
+                    <td id="toaddress"></td>
+                </tr>
+                <tr>
+                    <td>Time Stamp</td>
+                    <td id="timestamp"></td>
+                    <td>Cipher</td>
+                    <td id="cipher"></td>
+                </tr>
+                <tr>
+                    <td>Is Shared?</td>
+                    <td id="isshared"></td>
+                    <td>Status</td>
+                    <td id="status"></td>
+                </tr>
+                <tr>
+                    <td>Reference Trans ID</td>
+                    <td id="referencedtransactionid"></td>
+                    <td>Encrypted Signed Document</td>
+                    <td id="EncryptedSignedDocument"></td>
+                </tr>
+                <tr>
+                    <td>From Address</td>
+                    <td id="fromaddress"></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </table>
+        </div>
     </div>
 </body>
 
 </html>
 
-
-
 <script type="text/javascript">
+    var i = 0;
+    var slickslider;
     $(document).ready(function () {
-        $('#blockchain').slick({
+        slickslider = $('#blockchain').slick({
             slidesToShow: 3,
             slidesToScroll: 1,
             autoplay: true,
             autoplaySpeed: 2000,
         });
         GetBlockChain();
+        $.getJSON("http://localhost:3000/getblockchain", function (BlockChain) {
+            i = BlockChain.length;
+
+        });
     });
 
     function GetBlockChain() {
         $.getJSON("http://localhost:3000/getblockchain", function (BlockChain) {
-            for (var i = 0; i < BlockChain.length; i++) {
+            for (i; i < BlockChain.length; i++) {
                 console.log(BlockChain[i]);
                 $('#blockchain').slick('slickAdd', getBlockTable(BlockChain[i]));
             }
         });
     }
     function getBlockTable(data) {
-        return '<div class="blockdiv"><table class="table table-striped"><thead><tr><td>Attribute</td><td>Value</td></tr><thead><tr><td>Block Height</td><td>' + data.blockheight + '</td></tr><tr><td>Time Stamp</td><td>' + data.timestamp + '</td></tr><tr><td>Previous Hash</td><td>' + data.previousHash + '</td></tr><tr><td>Transaction</td><td>' + data.transaction + '</td></tr><tr><td>Is Shared</td><td>' + data.isshared + '</td></tr><tr><td>Referenced Transaction ID</td><td>' + data.referencedtransactionid + '</td></tr><tr><td>From Address</td><td>' + data.fromaddress + '</td></tr><tr><td>To Address</td><td>' + data.toaddress + '</td></tr><tr><td>Current Hash</td><td>' + data.currenthash + '</td></tr><tr><td>Nonce</td><td>' + data.nonce + '</td></tr></table></div>'
+        return '<div class="blockdiv roundborder"><table class="blocktable table table-striped">\
+            <thead><tr><td>Attribute</td><td>Value</td></tr><thead>\
+                <tr><td>Block Height</td><td id="blockheight">' + data.blockheight + '</td></tr>\
+                <tr><td>Time Stamp</td><td>' + data.timestamp + '</td></tr>\
+                <tr><td>Previous Hash</td><td>' + data.previousHash + '</td></tr>\
+                <tr><td>Transaction</td><td><button onclick="ShowTransaction(this.value)" value="' + data.blockheight + '"">Show Transaction</buttton></td></tr>\
+                <tr><td>Is Shared</td><td>' + data.isshared + '</td></tr>\
+                <tr><td>Referenced Transaction ID</td><td>' + data.referencedtransactionid + '</td></tr>\
+                <tr><td>From Address</td><td>' + data.fromaddress + '</td></tr>\
+                <tr><td>To Address</td><td>' + data.toaddress + '</td></tr>\
+                <tr><td>Current Hash</td><td>' + data.currenthash + '</td></tr>\
+                <tr><td>Nonce</td><td>' + data.nonce + '</td></tr></table></div>'
     }
     $(document).ready(function () {
-        setTimeout(function () {
-            GetBlockChain();
-        }, 5000);
     });
+
+    setInterval(function () {
+        GetBlockChain();
+    }, 5000);
+
+    function ShowTransaction(val) {
+        var URL = "http://localhost:3000/GetTransactionbyBlockHeight?blockheight=" + val;
+        $.get(URL, function (Block) {
+            var Transaction = JSON.parse(Block);
+            $('#transactionid').html(Transaction.transactionid);
+            $('#timestamp').html(Transaction.timestamp);
+            $('#isshared').html(Transaction.isshared);
+            $('#referencedtransactionid').html(Transaction.referencedtransactionid);
+            $('#fromaddress').html(Transaction.fromaddress);
+            $('#toaddress').html(Transaction.toaddress);
+            $('#EncryptedSignedDocument').html(Transaction.data.EncryptedSignedDocument);
+            $('#status').html(Transaction.data.EncryptedSecretKey.status);
+            $('#cipher').html(Transaction.data.EncryptedSecretKey.cipher);
+        });
+    }
 
 </script>
