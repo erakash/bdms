@@ -130,7 +130,7 @@ class Transaction{
         this.transactionid = newtransid;
         this.timestamp = timestamp;
         this.data = data;
-        if(data==null)
+        if(data.EncryptedSignedDocument==null)
         {
             this.isshared = new Boolean(true);
         }
@@ -186,9 +186,13 @@ function SHARE(FromAddress,ToAddress,TransactionID,UnlockingKey)
 {
     var KeyPair = GenerateAddressAndKey(UnlockingKey);
     var EncryptedSecretKey = GetEncryptedSecretKeyOfTransaction(TransactionID).cipher;   
+    //console.log(EncryptedSecretKey);
     var SecretKey = cryptico.decrypt(EncryptedSecretKey, KeyPair.RSAPrivateKey); 
-    var EncryptedSecretKeyNew = cryptico.encrypt(SecretKey, ToAddress);
-    var trans = new Transaction(guid(),Date.now(),null,TransactionID,FromAddress,ToAddress);
+    //console.log(SecretKey);
+    var EncryptedSecretKeyNew = cryptico.encrypt(SecretKey.plaintext, ToAddress);
+    //console.log(EncryptedSecretKeyNew);
+    var data = new Data(null,EncryptedSecretKeyNew);
+    var trans = new Transaction(guid(),Date.now(),data,TransactionID,FromAddress,ToAddress);
     var newblock = new Block(blockchain.getLatestBlock().blockheight+1,Date.now(),blockchain.getLatestBlock().currenthash,trans);
     blockchain.addBlock(newblock);
 }
@@ -205,6 +209,53 @@ function GetTransactionbyBlockHeight(BlockHeight){
     return null;s
 }
 
+function GetDecryptedTransactionData(TransactionID,PassPhrase){
+    var KeyPair = GenerateAddressAndKey(PassPhrase);
+    for (var i = 0; i < chain.length; i++){
+        var transid = chain[i].transaction.transactionid;
+        if(TransactionID == transid)
+        {  
+            //console.log(chain[i].transaction.isshared);
+            if(chain[i].transaction.isshared == false){
+                //console.log('Im inside issue');
+                var decryptedsecretkey = cryptico.decrypt(chain[i].transaction.data.EncryptedSecretKey.cipher, KeyPair.RSAPrivateKey);
+
+                if(decryptedsecretkey.status == 'success')
+                {
+                    var bytes  = CryptoJS.AES.decrypt(chain[i].transaction.data.EncryptedSignedDocument, decryptedsecretkey.plaintext);
+                    return bytes.toString(CryptoJS.enc.Utf8);
+                }
+                else{
+                    return 'Invalid Key Entered';
+                }
+            }
+            else{
+                //console.log('Im inside shared');
+                //console.log(chain[i].transaction.data.EncryptedSecretKey.cipher);
+                //console.log(KeyPair.RSAPrivateKey) ;
+                var decryptedsecretkey = cryptico.decrypt(chain[i].transaction.data.EncryptedSecretKey.cipher, KeyPair.RSAPrivateKey); 
+               //console.log(decryptedsecretkey);
+                var referencetransid = chain[i].transaction.referencedtransactionid;
+                //console.log(referencetransid);
+                if(decryptedsecretkey.status == 'success')
+                {
+                    for (var i = 0; i < chain.length; i++){
+                        var transid = chain[i].transaction.transactionid;
+                        if(referencetransid == transid){
+                            var bytes  = CryptoJS.AES.decrypt(chain[i].transaction.data.EncryptedSignedDocument, decryptedsecretkey.plaintext);
+                            return bytes.toString(CryptoJS.enc.Utf8);
+                        }
+                    }
+                }
+                else{
+                    return 'Invalid Key Entered';
+                }                
+            }
+        }
+    }
+    return 'Transaction Not Found'
+}
+
 //-------------------------Code Run Point----------------------------//
 var blockchain = new Blockchain();  //Initiate a new blockchain
 blockchain.createGenesisBlock();    //Create Genesis Block in the blockchain
@@ -219,6 +270,7 @@ app.listen(3000, () => console.log('Example app listening on port 3000!'));
 app.get('/GetIssuedTransactions', (req, res) => res.send(GetIssuedTransactions(new Buffer(req.query.fromadd, 'base64'))));
 app.get('/GetSharedTransactions', (req, res) => res.send(GetSharedTransactions(new Buffer(req.query.toadd, 'base64'))));
 app.get('/GetTransactionbyBlockHeight', (req, res) => res.send(GetTransactionbyBlockHeight(req.query.blockheight)));
+app.get('/GetDecryptedTransactionData', (req, res) => res.send(GetDecryptedTransactionData(req.query.TransactionID,req.query.PassPhrase)));
 
 
 app.get('/BlockChain', function(req, res) {
