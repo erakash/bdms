@@ -14,6 +14,11 @@
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mouse0270-bootstrap-notify/3.1.7/bootstrap-notify.js"></script>
     <style>
+        body,
+        html {
+            overflow: hidden
+        }
+
         .myaddress {
             width: 800px !important;
         }
@@ -45,6 +50,20 @@
             width: 150px;
             float: right;
             margin-right: 100px;
+        }
+
+        .GetTransData {
+            margin: 20px;
+        }
+
+        .getdocumenttextarea {
+            height: 70px;
+            margin: 25px;
+            width: 600px;
+        }
+        .validationrow{
+            background: lightblue;
+            margin: 25px;
         }
     </style>
 </head>
@@ -147,6 +166,22 @@
             </div>
         </div>
     </div>
+    <div class="row validationrow">
+        <div class="col-sm-2 GetTransData">
+                <input type="text" class="form-control" id="passphrase" placeholder="Enter Passphrase">
+        </div>
+        <div class="col-sm-4 GetTransData">
+            <div class="input-group">
+                <input type="text" class="form-control" id="transid" placeholder="Enter Transaction ID">
+                <span class="input-group-btn">
+                    <button type="button" class="btn btn-default btn-default" onclick="GetTransactionData()">Get Document</button>
+                </span>
+            </div>
+        </div>
+        <div col-sm-4>
+            <textarea class="getdocumenttextarea" rows="3" id="getdocument" placeholder=""></textarea>
+        </div>
+    </div>
 </body>
 
 </html>
@@ -236,7 +271,7 @@
 
     function IssuedTransactionGridSetup() {
         issuedtransactiongridtable = $('#IssuedTransactions').DataTable({
-            "scrollY": "30vh",
+            "scrollY": "20vh",
             "scrollCollapse": false,
             "paging": false,
             "searching": false,
@@ -248,15 +283,15 @@
                 {
                     "data": "transactionid",
                     "render": function (data, type, row) {
-                        return type === 'display' && data.length > 10 ?
-                            data.substr(0, 25) + '…' :
+                        return type === 'display' && data.length > 36 ?
+                            data.substr(0, 36) + '…' :
                             data;
                     }
                 },
                 {
                     "data": "toaddress",
                     "render": function (data, type, row) {
-                        return type === 'display' && data.length > 10 ?
+                        return type === 'display' && data.length > 25 ?
                             data.substr(0, 25) + '…' :
                             data;
                     }
@@ -281,7 +316,7 @@
 
     function SharedTransactionGridSetup() {
         sharedtransactiongridtable = $('#SharedTransactions').DataTable({
-            "scrollY": "30vh",
+            "scrollY": "20vh",
             "scrollCollapse": false,
             "paging": false,
             "searching": false,
@@ -293,15 +328,15 @@
                 {
                     "data": "transactionid",
                     "render": function (data, type, row) {
-                        return type === 'display' && data.length > 10 ?
-                            data.substr(0, 25) + '…' :
+                        return type === 'display' && data.length > 36 ?
+                            data.substr(0, 36) + '…' :
                             data;
                     }
                 },
                 {
                     "data": "fromaddress",
                     "render": function (data, type, row) {
-                        return type === 'display' && data.length > 10 ?
+                        return type === 'display' && data.length > 25 ?
                             data.substr(0, 25) + '…' :
                             data;
                     }
@@ -316,6 +351,16 @@
                     }
                 }
             ]
+        });
+    }
+
+    function GetTransactionData() {
+        var queryparameters = {};
+        queryparameters.TransactionID = $('#transid').val();
+        queryparameters.PassPhrase = $('#passphrase').val();
+        $.get("http://localhost:3000/GetDecryptedTransactionData?" + $.param(queryparameters), function (result) {
+            $('#getdocument').val(result);
+            console.log(result);
         });
     }
 
